@@ -1,20 +1,34 @@
 import InterviewCard from "@/components/InterviewCard";
 import { Button } from "@/components/ui/button";
 import { dummyInterviews } from "@/constants";
+import {
+  getCurrentUser,
+  getInterviewsByUserId,
+} from "@/lib/actions/auth.action";
+import { getLatestInterviews } from "@/lib/actions/auth.action";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const Page = () => {
+const Page = async () => {
+  const user = await getCurrentUser();
+  const [userInterviews, latestInterview] = await Promise.all([
+    getInterviewsByUserId(user?.id!),
+    getLatestInterviews({ userId: user?.id! }),
+  ]);
+
+  const hasPastInterviews = userInterviews?.length! > 0;
+  const hasUpcomingInterviews = latestInterview?.length! > 0;
+
   return (
     <>
-      {/* Hero Section */}
       <section className="card-cta">
         <div className="flex flex-col gap-6 max-w-lg">
-          <h2>Ace your interviews with AI-driven practice and feedback.</h2>
+          <h2>Get Interview-Ready with AI-Powered Practice & Feedback</h2>
           <p className="text-lg">
-            Practice with real-time interview questions and receive instant feedback.
+            Practice real interview questions & get instant feedback
           </p>
+
           <Button asChild className="btn-primary max-sm:w-full">
             <Link href="/interview">Start an Interview</Link>
           </Button>
@@ -22,44 +36,58 @@ const Page = () => {
 
         <Image
           src="/robot.png"
-          alt="AI Interview Assistant"
+          alt="robo-dude"
           width={400}
           height={400}
           className="max-sm:hidden"
         />
       </section>
 
-      {/* Interview Dashboard Section */}
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Interview Dashboard</h2>
+        <h2>Your Interviews</h2>
 
-        {dummyInterviews.length > 0 ? (
-          <div className="interviews-section">
-            {dummyInterviews.map((interview) => (
-              <InterviewCard key={interview.id} {...interview} />
-            ))}
-          </div>
-        ) : (
-          <p>No interviews available. Start practicing today!</p>
-        )}
+        <div className="interviews-section">
+          {hasPastInterviews ? (
+            userInterviews?.map((interview) => (
+              <InterviewCard
+                key={interview.id}
+                userId={user?.id}
+                interviewId={interview.id}
+                role={interview.role}
+                type={interview.type}
+                techstack={interview.techstack}
+                createdAt={interview.createdAt}
+              />
+            ))
+          ) : (
+            <p>You haven&apos;t taken any interviews yet</p>
+          )}
+        </div>
       </section>
 
-      {/* Challenge Section */}
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Challenge Yourself with an Interview</h2>
+        <h2>Take Interviews</h2>
 
-        {dummyInterviews.length > 0 ? (
-          <div className="interviews-section">
-            {dummyInterviews.map((interview) => (
-              <InterviewCard key={interview.id} {...interview} />
-            ))}
-          </div>
-        ) : (
-          <p>Hone your skills by starting your first interview today!</p>
-        )}
+        <div className="interviews-section">
+          {hasUpcomingInterviews ? (
+            latestInterview?.map((interview) => (
+              <InterviewCard
+                key={interview.id}
+                userId={user?.id}
+                interviewId={interview.id}
+                role={interview.role}
+                type={interview.type}
+                techstack={interview.techstack}
+                createdAt={interview.createdAt}
+              />
+            ))
+          ) : (
+            <p>There are no interviews available</p>
+          )}
+        </div>
       </section>
     </>
   );
-};
+}
 
 export default Page;

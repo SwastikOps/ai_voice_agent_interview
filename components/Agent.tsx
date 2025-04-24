@@ -24,8 +24,8 @@ interface AgentProps {
   userName: string;
   userId: string;
   interviewId: string;
-  feedbackId: string;
-  type: "generate" | "custom";
+  feedbackId?: string;
+  type: "generate" | "custom" | "interview";
   questions: string[];
 }
 
@@ -79,11 +79,31 @@ const Agent = ({
     };
   }, []);
 
+  const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+    console.log('Generate Feedback Here');
+
+    const { success,id } ={
+      success:true,
+      id: 'feedback-id'
+    }
+
+    if(success && id){
+      router.push(`/interview/${interviewId}/feedback`)
+    }else{
+      console.log("Error saving feedback");
+      router.push('/');
+    }
+  }
+
   useEffect(() => {
     if (callStatus === CallStatus.FINISHED) {
-      router.push("/");
+      if(type === 'generate'){
+        router.push('/')
+      }else{
+        handleGenerateFeedback(messages);
+      }
     }
-  }, [callStatus, router]);
+  }, [messages,callStatus, type,userId]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
@@ -190,3 +210,7 @@ const Agent = ({
 };
 
 export default Agent;
+function async(messages: SavedMessage[]) {
+  throw new Error("Function not implemented.");
+}
+

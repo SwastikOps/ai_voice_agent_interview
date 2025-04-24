@@ -52,7 +52,7 @@ interface Feedback {
     userId?: string;
     interviewId?: string;
     feedbackId?: string;
-    type: "generate" | "interview";
+    type: "generate" | "custom" | "interview";
     questions?: string[];
   }
   
